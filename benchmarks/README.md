@@ -25,27 +25,25 @@ differences between RISC (ARM) and CISC (x86-64) designs.
 
 ---
 
-## How to Handle the "Different Hardware" Concern
 
-Your M3 and Ryzen 5 are at different price/performance tiers. This is NOT
-a flaw — handle it with these normalized metrics:
 
-### Raw Metrics (collect these):
+
+
+### Raw Metrics:
 - Wall-clock execution time (seconds)
 - CPU energy consumed (joules)
 - Instructions retired (from perf counters)
 - CPU cycles consumed
 - Clock frequency during test
 
-### Normalized Metrics (derive and REPORT these):
+### Normalized Metrics:
 - **IPC** = Instructions / Cycles — architectural efficiency
 - **Energy per Operation** = Joules / Operations — energy efficiency
 - **Performance per Watt** = Operations / (Joules/second) — perf/W
 - **Energy-Delay Product** = Energy × Time — holistic efficiency
 - **Ops per Cycle** = useful operations / cycles — ISA efficiency
 
-These metrics are INDEPENDENT of clock speed and core count, so they
-fairly compare an M3 at 4.05 GHz against a Ryzen 5 at 4.6 GHz.
+These metrics are INDEPENDENT of clock speed and core count.
 
 ---
 
@@ -77,7 +75,7 @@ benchmarks/
 
 ## Build & Run Instructions
 
-### On Mac (M3 — AArch64):
+### On Mac:
 
 ```bash
 # Assembly benchmarks
@@ -97,7 +95,7 @@ sudo powermetrics --samplers cpu_power -i 100 -n 50 &
 kill %1
 ```
 
-### On Linux (Ryzen 5 — x86-64):
+### On Linux:
 
 ```bash
 # Assembly benchmarks
@@ -118,41 +116,5 @@ perf stat -r 30 ./matmul_x86
 
 ---
 
-## Experimental Protocol
 
-1. **Warm-up**: Run each benchmark 5 times before recording (discard results)
-2. **Repetitions**: 30 measured runs per benchmark per platform
-3. **Environment**: Close all other applications, disable Wi-Fi/Bluetooth
-4. **CPU governor**: Set to 'performance' on Linux (`cpupower frequency-set -g performance`)
-5. **Turbo**: Disable turbo/boost for consistent results
-   - Linux: `echo 0 > /sys/devices/system/cpu/cpufreq/boost`
-   - Mac: Not directly controllable, but powermetrics reports actual frequency
-6. **Core pinning**:
-   - Linux: `taskset -c 0 ./benchmark`
-   - Mac: Use QoS to target P-cores (set in code or via `taskpolicy`)
-7. **Reporting**: Mean, standard deviation, 95% confidence interval, min, max
 
----
-
-## Iso-Power Experiment (Optional but Recommended)
-
-To fairly compare architectures at the same power budget:
-
-1. Find the M3's average power during benchmarks (e.g., ~12W)
-2. Throttle the Ryzen 5 to a similar power draw:
-   ```bash
-   # Set max frequency to reduce power to ~12W
-   cpupower frequency-set -u 2.0GHz
-   ```
-3. Run the same benchmarks and compare performance at equal power
-4. This reveals which *architecture* extracts more work per watt
-
----
-
-## Citation
-
-If you use this benchmark suite in your article, describe it as:
-"A custom benchmark suite consisting of three workload types (compute-intensive,
-memory-intensive, and branch-intensive) implemented in both AArch64 and x86-64
-assembly, designed to isolate architectural differences between ARM and x86
-processors."
